@@ -42,18 +42,47 @@ class HTMLTableFormatter(TableFormatter):
         print(self._tag("tr", " ".join(self._tag("td", r) for r in rowdata)))
 
 
-def create_formatter(kind):
+class ColumnFormatMixin:
+    formats = []
+
+    def row(self, rowdata):
+        rowdata = [(fmt % d) for fmt, d in zip(self.formats, rowdata)]
+        super().row(rowdata)
+
+
+class UpperHeadersMixin:
+    def headings(self, headers):
+        super().headings([h.upper() for h in headers])
+
+
+def create_formatter(kind, column_formats=[], upper_headers=False):
     match kind:
         case "text":
-            return TextTableFormatter()
+            formatter_cls = TextTableFormatter
         case "csv":
-            return CSVTableFormatter()
+            formatter_cls = CSVTableFormatter
         case "html":
-            return HTMLTableFormatter()
+            formatter_cls = HTMLTableFormatter
         case _:
             raise ValueError(
                 f"Unsupported formatter {kind}, must be one of text, csv, html"
             )
+
+    if column_formats:
+
+        class NewFormatter(ColumnFormatMixin, formatter_cls):
+            formats = column_formats
+
+        formatter_cls = NewFormatter
+
+    if upper_headers:
+
+        class NewFormatter(UpperHeadersMixin, formatter_cls):
+            pass
+
+        formatter_cls = NewFormatter
+
+    return formatter_cls()
 
 
 # Print a table
