@@ -70,17 +70,13 @@ def create_formatter(kind, column_formats=[], upper_headers=False):
 
     if column_formats:
 
-        class NewFormatter(ColumnFormatMixin, formatter_cls):
+        class formatter_cls(ColumnFormatMixin, formatter_cls):
             formats = column_formats
-
-        formatter_cls = NewFormatter
 
     if upper_headers:
 
-        class NewFormatter(UpperHeadersMixin, formatter_cls):
+        class formatter_cls(UpperHeadersMixin, formatter_cls):
             pass
-
-        formatter_cls = NewFormatter
 
     return formatter_cls()
 
